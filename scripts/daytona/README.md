@@ -6,9 +6,12 @@ logs and outputs back. With no `--cmd` it runs a GPU smoke: a tiny HSTU +
 sampled-softmax model trained for a few steps on synthetic data, ending in
 `SMOKE OK`. The smoke is not a paper reproduction.
 
-Proven working 2026-10-28: run `smoke-20261028-115147` on 1x H100 80GB HBM3
+Proven working 2026-10-28: run `smoke-20261028-120847` on 1x H100 80GB HBM3
 (torch 2.6.0+cu124, fbgemm-gpu 1.1.0): loss 8.83 to 0.91 over 20 steps, then
-`SMOKE OK`. The box started in 14 s and the run took 1.3 min (about $0.07).
+`SMOKE OK`. The box started in 15 s and the run took 1.3 min (about $0.07).
+A separate check that day imported `main.py`, the data preprocessor and
+TensorBoard's `SummaryWriter` on a box with the default requirements: numpy
+2.2.2, pandas 2.3.3, tensorboard 2.21.0, absl-py 2.5.1, gin-config 0.5.0.
 The same day's tests also covered `--download`, a failing command (exit code
 reported, runner exits 1), and cleanup on SIGTERM.
 
@@ -17,7 +20,8 @@ reported, runner exits 1), and cleanup on SIGTERM.
 - `scripts/daytona/run.py`: the runner (`run`, `list`, `stop`).
 - `scripts/daytona/smoke_train.py`: the smoke training script (runs on the box).
 - `scripts/daytona/requirements.txt`: pip packages installed on the box before
-  the command runs. The pins matter; see the FBGEMM section below.
+  the command runs: what the repo's research code imports that the image
+  lacks. The pins matter; see the FBGEMM section below.
 
 ## Prerequisites
 
@@ -104,10 +108,11 @@ minutes, estimated cost, command.
 | Requirements | `scripts/daytona/requirements.txt` | `--requirements` |
 
 Seen on the box on 2026-10-28: Python 3.11 (conda, `/opt/conda`), torch
-2.6.0+cu124, NVIDIA driver 595.91.07, running as root. PyPI is reachable (the
-417 MB fbgemm-gpu wheel downloads in about 40 s), but one box that day could not
-reach it at all, so the runner gives pip 60 s timeouts and 3 attempts. pip
-installs into the image's Python, so each run starts from the clean image.
+2.6.0+cu124, NVIDIA driver 595.91.07, running as root. PyPI speed varies by
+box: the 417 MB fbgemm-gpu wheel usually downloaded in about 40 s, took 8 min on
+one box, and one box could not reach PyPI at all. The runner gives pip 60 s
+timeouts and 3 attempts. Budget a few minutes of pip per run. pip installs into
+the image's Python, so each run starts from the clean image.
 
 ## Monitoring and cleanup
 
@@ -143,8 +148,10 @@ a different torch fails at import with `undefined symbol` (for example
 
 The repo's top-level `requirements.txt` leaves torch unpinned (`torch>=2.6.0`),
 so installing it on the box can upgrade torch past the image's version.
-`gin-config` is in the smoke requirements because the GR research modules
-`import gin`.
+The default requirements file covers what the GR research code (`main.py`,
+`preprocess_public_data.py`, `generative_recommenders/research/`) imports
+beyond the image: gin-config, pandas (kept below 3, because that code predates
+pandas 3's changed defaults), tensorboard and absl-py.
 
 ## Troubleshooting
 

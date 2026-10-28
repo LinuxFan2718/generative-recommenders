@@ -1,2 +1,5 @@
 fbgemm-gpu==1.1.0
 gin-config>=0.5.0
+pandas>=2.2.0,<3
+tensorboard>=2.19.0
+absl-py
