@@ -1,0 +1,2 @@
+fbgemm-gpu==1.1.0
+gin-config>=0.5.0

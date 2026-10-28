@@ -156,3 +156,6 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Daytona GPU run outputs (scripts/daytona/run.py)
+daytona_runs/
